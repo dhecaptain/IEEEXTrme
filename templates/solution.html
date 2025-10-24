@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}{{ solution.problem_name }} - {{ solution.language }} - IEEEXtreme Solutions{% endblock %}
+
+{% block extra_head %}
+<style>
+{{ highlight_css|safe }}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="solution-page">
+        <div class="solution-header-page">
+            <a href="{{ url_for('index') }}" class="back-link">← Back to all solutions</a>
+            <h1>{{ solution.problem_name }}</h1>
+            <div class="solution-badges">
+                <span class="language-badge-large">{{ solution.language }}</span>
+                {% if solution.difficulty %}
+                    <span class="difficulty-badge difficulty-{{ solution.difficulty.lower() }}">{{ solution.difficulty }}</span>
+                {% endif %}
+                <span class="meta-info">By {{ solution.author or 'Anonymous' }}</span>
+                <span class="meta-info">{{ solution.created_at|format_date }}</span>
+                <span class="meta-info">👁️ {{ solution.views }} views</span>
+            </div>
+            
+            <!-- Engagement Buttons -->
+            <div class="engagement-buttons">
+                <button onclick="likeSolution({{ solution.id }})" class="btn-engage" id="like-btn">
+                    ❤️ Like (<span id="like-count">{{ solution.likes }}</span>)
+                </button>
+                <button onclick="bookmarkSolution({{ solution.id }})" class="btn-engage" id="bookmark-btn">
+                    🔖 Bookmark (<span id="bookmark-count">{{ solution.bookmarks }}</span>)
+                </button>
+                <button onclick="scrollToComments()" class="btn-engage">
+                    💬 Comment ({{ solution.comments|length }})
+                </button>
+            </div>
+        </div>
+        
+        {% if solution.description or solution.time_complexity or solution.space_complexity or solution.execution_time_ms %}
+            <div class="solution-description-box">
+                {% if solution.description %}
+                    <h3>📝 Solution Approach</h3>
+                    <p>{{ solution.description }}</p>
+                {% endif %}
+                
+                {% if solution.time_complexity or solution.space_complexity or solution.execution_time_ms %}
+                    <div class="complexity-info">
+                        {% if solution.time_complexity %}
+                            <div class="complexity-item">
+                                <strong>⏱️ Time Complexity:</strong> {{ solution.time_complexity }}
+                            </div>
+                        {% endif %}
+                        {% if solution.space_complexity %}
+                            <div class="complexity-item">
+                                <strong>💾 Space Complexity:</strong> {{ solution.space_complexity }}
+                            </div>
+                        {% endif %}
+                        {% if solution.execution_time_ms %}
+                            <div class="complexity-item">
+                                <strong>⚡ Execution Time:</strong> {{ solution.execution_time_ms }} ms
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                {% if solution.tags %}
+                    <div class="tags-container">
+                        <strong>🏷️ Tags:</strong>
+                        {% for tag in solution.tags.split(',') %}
+                            <span class="tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <div class="code-section">
+            <div class="code-header">
+                <h3>💻 Code</h3>
+                <button onclick="copyCode()" class="btn-copy">Copy Code</button>
+            </div>
+            <div class="code-container">
+                {{ highlighted_code|safe }}
+            </div>
+            <textarea id="code-text" style="display:none;">{{ solution.code }}</textarea>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="comments-section" id="comments-section">
+            <h3>💬 Comments ({{ solution.comments|length }})</h3>
+            
+            {% if solution.comments %}
+                <div class="comments-list">
+                    {% for comment in solution.comments %}
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <strong>{{ comment.author }}</strong>
+                                <span class="comment-date">{{ comment.created_at|format_date }}</span>
+                            </div>
+                            <p class="comment-content">{{ comment.content }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-comments">No comments yet. Be the first to comment!</p>
+            {% endif %}
+            
+            <!-- Add Comment Form -->
+            <div class="add-comment-form">
+                <h4>Add a Comment</h4>
+                <form method="post" action="{{ url_for('add_comment', solution_id=solution.id) }}">
+                    <div class="form-group">
+                        <input type="text" name="author" placeholder="Your name" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <textarea name="content" rows="4" placeholder="Share your thoughts, ask questions, or provide feedback..." required class="form-control"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Post Comment</button>
+                </form>
+            </div>
+        </div>
+        
+        {% if related_solutions %}
+            <div class="related-solutions">
+                <h3>🔗 Other Solutions for "{{ solution.problem_name }}"</h3>
+                <div class="related-grid">
+                    {% for related in related_solutions %}
+                        <div class="related-card">
+                            <span class="language-badge">{{ related.language }}</span>
+                            <p class="related-author">by {{ related.author or 'Anonymous' }}</p>
+                            <p class="related-stats">❤️ {{ related.likes }} | 👁️ {{ related.views }}</p>
+                            <a href="{{ url_for('view_solution', solution_id=related.id) }}" class="btn-small">View</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyCode() {
+    const codeText = document.getElementById('code-text');
+    codeText.select();
+    codeText.setSelectionRange(0, 99999); // For mobile devices
+    
+    navigator.clipboard.writeText(codeText.value).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 2000);
+    });
+}
+
+function likeSolution(solutionId) {
+    fetch(`/like/${solutionId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('like-count').textContent = data.likes;
+            document.getElementById('like-btn').classList.add('liked');
+        }
+    });
+}
+
+function bookmarkSolution(solutionId) {
+    fetch(`/bookmark/${solutionId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('bookmark-count').textContent = data.bookmarks;
+            document.getElementById('bookmark-btn').classList.add('bookmarked');
+        }
+    });
+}
+
+function scrollToComments() {
+    document.getElementById('comments-section').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

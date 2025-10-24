@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# PythonAnywhere Deployment Instructions
+# Run these commands in PythonAnywhere Bash Console
+
+echo "🚀 IEEEXtreme Solutions - PythonAnywhere Setup"
+echo "================================================"
+echo ""
+echo "1. Go to: https://www.pythonanywhere.com"
+echo "2. Sign up for FREE account"
+echo "3. Open a Bash console"
+echo "4. Upload your files OR run commands below:"
+echo ""
+echo "# Create project directory"
+echo "mkdir -p ~/ieeextreme"
+echo "cd ~/ieeextreme"
+echo ""
+echo "# Create virtual environment"
+echo "mkvirtualenv --python=/usr/bin/python3.10 ieeextreme"
+echo ""
+echo "# Upload files from your computer to PythonAnywhere Files tab"
+echo "# Then install dependencies:"
+echo "pip install -r requirements.txt"
+echo ""
+echo "# Initialize database"
+echo "python migrate_db.py"
+echo ""
+echo "5. Go to Web tab → Add new web app → Manual configuration"
+echo "6. Edit WSGI file (click link) with content from wsgi_pythonanywhere.py"
+echo "7. Set virtualenv: /home/YOURUSERNAME/.virtualenvs/ieeextreme"
+echo "8. Reload web app"
+echo "9. Visit: http://YOURUSERNAME.pythonanywhere.com"

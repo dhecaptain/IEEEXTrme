@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - IEEEXtreme Solutions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="leaderboard-page">
+        <h1>🏆 Leaderboard</h1>
+        <p class="page-subtitle">Top contributors to the IEEEXtreme community</p>
+        
+        {% if users %}
+            <div class="leaderboard-table">
+                <table class="leaderboard">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Solutions</th>
+                            <th>Likes Received</th>
+                            <th>Total Views</th>
+                            <th>Comments</th>
+                            <th>Streak</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr class="{% if loop.index <= 3 %}top-{{ loop.index }}{% endif %}">
+                                <td class="rank">
+                                    {% if loop.index == 1 %}🥇
+                                    {% elif loop.index == 2 %}🥈
+                                    {% elif loop.index == 3 %}🥉
+                                    {% else %}{{ loop.index }}
+                                    {% endif %}
+                                </td>
+                                <td class="username">
+                                    <strong>{{ user.username }}</strong>
+                                    {% if user.badges %}
+                                        <div class="user-badges">
+                                            {% for badge in user.badges.split(',') %}
+                                                <span class="badge">{{ badge }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.solutions_submitted }}</td>
+                                <td>{{ user.total_likes }}</td>
+                                <td>{{ user.total_views }}</td>
+                                <td>{{ user.comments_made }}</td>
+                                <td>
+                                    {% if user.streak_days > 0 %}
+                                        🔥 {{ user.streak_days }} days
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="score">{{ user.total_score }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="scoring-info">
+                <h3>📊 How Scoring Works</h3>
+                <ul>
+                    <li>✅ Submit Solution: <strong>+10 points</strong></li>
+                    <li>❤️ Receive Like: <strong>+5 points</strong></li>
+                    <li>💬 Make Comment: <strong>+3 points</strong></li>
+                    <li>👁️ Get View: <strong>+1 point</strong></li>
+                </ul>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No users yet. Be the first to contribute!</p>
+                <a href="{{ url_for('submit_solution') }}" class="btn-primary">Submit a Solution</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Trending Solutions - IEEEXtreme Solutions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="trending-page">
+        <h1>🔥 Trending Solutions</h1>
+        <p class="page-subtitle">Most popular solutions from the past week</p>
+        
+        {% if solutions %}
+            <div class="solutions-grid">
+                {% for solution in solutions %}
+                    <div class="solution-card trending-card">
+                        <div class="solution-header">
+                            <h3>{{ solution.problem_name }}</h3>
+                            <span class="language-badge">{{ solution.language }}</span>
+                        </div>
+                        
+                        {% if solution.description %}
+                            <p class="solution-description">{{ solution.description }}</p>
+                        {% endif %}
+                        
+                        <div class="solution-meta">
+                            <span class="author">👤 {{ solution.author or 'Anonymous' }}</span>
+                            <span class="date">📅 {{ solution.created_at|format_date }}</span>
+                        </div>
+                        
+                        <div class="solution-engagement">
+                            <span class="likes">❤️ {{ solution.likes }}</span>
+                            <span class="views">👁️ {{ solution.views }}</span>
+                            <span class="bookmarks">🔖 {{ solution.bookmarks }}</span>
+                            <span class="comments">💬 {{ solution.comments|length }}</span>
+                            {% if solution.difficulty %}
+                                <span class="difficulty difficulty-{{ solution.difficulty.lower() }}">{{ solution.difficulty }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="trending-score">
+                            🔥 Popularity: {{ solution.likes * 5 + solution.views }}
+                        </div>
+                        
+                        <a href="{{ url_for('view_solution', solution_id=solution.id) }}" class="btn-view">View Solution →</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No trending solutions yet. Keep sharing!</p>
+                <a href="{{ url_for('submit_solution') }}" class="btn-primary">Submit a Solution</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

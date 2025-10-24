@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>🏆 IEEEXtreme Solutions Hub</h1>
+        <p class="hero-subtitle">Share and learn from 100% solutions in the IEEEXtreme programming competition</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_solutions }}</div>
+                <div class="stat-label">Solutions Shared</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_problems }}</div>
+                <div class="stat-label">Problems Solved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ languages_used|length }}</div>
+                <div class="stat-label">Languages Used</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Search and Filter Section -->
+    <div class="filters-section">
+        <form method="get" action="{{ url_for('index') }}" class="filters-form">
+            <input type="text" name="search" placeholder="Search problems or descriptions..." value="{{ search_query }}" class="search-input">
+            
+            <select name="language" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Languages</option>
+                {% for lang, count in languages_used %}
+                    <option value="{{ lang }}" {% if current_language == lang %}selected{% endif %}>
+                        {{ lang }} ({{ count }})
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <select name="problem" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Problems</option>
+                {% for prob, count in problems_list %}
+                    <option value="{{ prob }}" {% if current_problem == prob %}selected{% endif %}>
+                        {{ prob }} ({{ count }})
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="btn-secondary">Search</button>
+            
+            {% if current_language or current_problem or search_query %}
+                <a href="{{ url_for('index') }}" class="btn-text">Clear Filters</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Solutions Grid -->
+    <div class="solutions-section">
+        <h2>Solutions</h2>
+        
+        {% if solutions %}
+            <div class="solutions-grid">
+                {% for solution in solutions %}
+                    <div class="solution-card">
+                        <div class="solution-header">
+                            <h3>{{ solution.problem_name }}</h3>
+                            <span class="language-badge">{{ solution.language }}</span>
+                        </div>
+                        
+                        {% if solution.description %}
+                            <p class="solution-description">{{ solution.description }}</p>
+                        {% endif %}
+                        
+                        <div class="solution-meta">
+                            <span class="author">👤 {{ solution.author or 'Anonymous' }}</span>
+                            <span class="date">📅 {{ solution.created_at|format_date }}</span>
+                            <span class="views">👁️ {{ solution.views }} views</span>
+                        </div>
+                        
+                        <div class="solution-engagement">
+                            <span class="likes">❤️ {{ solution.likes }}</span>
+                            <span class="bookmarks">🔖 {{ solution.bookmarks }}</span>
+                            {% if solution.comments %}
+                                <span class="comments">💬 {{ solution.comments|length }}</span>
+                            {% endif %}
+                            {% if solution.difficulty %}
+                                <span class="difficulty difficulty-{{ solution.difficulty.lower() }}">{{ solution.difficulty }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ url_for('view_solution', solution_id=solution.id) }}" class="btn-view">View Solution →</a>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+                <div class="pagination">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('index', page=pagination.prev_num, language=current_language, problem=current_problem, search=search_query) }}" class="page-link">← Previous</a>
+                    {% endif %}
+                    
+                    <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+                    
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('index', page=pagination.next_num, language=current_language, problem=current_problem, search=search_query) }}" class="page-link">Next →</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <p>😕 No solutions found. Be the first to share!</p>
+                <a href="{{ url_for('submit_solution') }}" class="btn-primary">Submit a Solution</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

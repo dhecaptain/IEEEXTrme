@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Featured Solutions - IEEEXtreme Solutions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="featured-page">
+        <h1>⭐ Featured Solutions</h1>
+        <p class="page-subtitle">Handpicked exceptional solutions for learning</p>
+        
+        {% if solutions %}
+            <div class="solutions-grid">
+                {% for solution in solutions %}
+                    <div class="solution-card featured-card">
+                        <div class="featured-badge">⭐ FEATURED</div>
+                        <div class="solution-header">
+                            <h3>{{ solution.problem_name }}</h3>
+                            <span class="language-badge">{{ solution.language }}</span>
+                        </div>
+                        
+                        {% if solution.description %}
+                            <p class="solution-description">{{ solution.description }}</p>
+                        {% endif %}
+                        
+                        {% if solution.time_complexity or solution.space_complexity %}
+                            <div class="complexity-badges">
+                                {% if solution.time_complexity %}
+                                    <span class="complexity">⏱️ {{ solution.time_complexity }}</span>
+                                {% endif %}
+                                {% if solution.space_complexity %}
+                                    <span class="complexity">💾 {{ solution.space_complexity }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="solution-meta">
+                            <span class="author">👤 {{ solution.author or 'Anonymous' }}</span>
+                            <span class="date">📅 {{ solution.created_at|format_date }}</span>
+                        </div>
+                        
+                        <div class="solution-engagement">
+                            <span class="likes">❤️ {{ solution.likes }}</span>
+                            <span class="views">👁️ {{ solution.views }}</span>
+                            {% if solution.difficulty %}
+                                <span class="difficulty difficulty-{{ solution.difficulty.lower() }}">{{ solution.difficulty }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ url_for('view_solution', solution_id=solution.id) }}" class="btn-view">View Solution →</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No featured solutions yet. Check back soon!</p>
+                <a href="{{ url_for('index') }}" class="btn-primary">Browse All Solutions</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
